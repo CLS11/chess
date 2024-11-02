@@ -6,7 +6,8 @@ const int kBoardWidth = 10;
 const int kBoardHeight = 10;
 
 class BoardPainter extends CustomPainter {
-  BoardPainter(GameState gameState);
+  BoardPainter(this.gameState);
+  final GameState gameState;
 
   void paintBackground(Canvas canvas, Size size, Size cell) {
     final paint = Paint();
@@ -14,9 +15,10 @@ class BoardPainter extends CustomPainter {
     for (var i = 0; i < kBoardWidth; ++i) {
       for (var j = 0; j < kBoardHeight; ++j) {
         paint.color = ((i + j) % 2 == 0) ? Colors.blueGrey : Colors.grey;
-        
+
         canvas.drawRect(
-          Rect.fromLTWH(i * cell.width, j * cell.height, cell.width, cell.height),
+          Rect.fromLTWH(
+              i * cell.width, j * cell.height, cell.width, cell.height),
           paint,
         );
       }
@@ -26,20 +28,32 @@ class BoardPainter extends CustomPainter {
   void paintPlayers(Canvas canvas, Size size, Size cellSize) {
     final paint = Paint();
     paint.style = PaintingStyle.fill;
-    for (var player in boardState.players) {
-     var location = player.location;
-     paint.color = player.color;
-     var offset = Offset((location.x+0.5)*cellSize.width)
+    for (var player in gameState.players) {
+      final position = player.position;
+      paint.color = player.color;
+      final offset = Offset(
+        (position.x + 0.5) * cellSize.width,
+        (position.y + 0.5) * cellSize.width,
+      );
+      canvas.drawOval(
+        Rect.fromLTWH(
+          position.x * cellSize.width,
+          position.y * cellSize.height,
+          cellSize.width,
+          cellSize.height,
+        ),
+        paint,
+      );
     }
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    final cellSize = Size(size.width/kBoardWidth, size.height/kBoardHeight);
+    final cellSize = Size(size.width / kBoardWidth, size.height / kBoardHeight);
 
-    paintBackground(canvas, size);
+    paintBackground(canvas, size, cellSize);
 
-    paintPlayers(canvas, size);
+    paintPlayers(canvas, size, cellSize);
   }
 
   @override

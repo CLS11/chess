@@ -1,4 +1,5 @@
 import 'package:chess/board.dart';
+import 'package:chess/game_controller.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,8 +17,19 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: SizedBox.expand(
-        child: Board(gameState: gameState),
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: AspectRatio(
+          aspectRatio: 1.0,
+          child: Board(gameState: gameState),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            gameState = GameController.takeTurn(gameState);
+          });
+        },
       ),
     );
   }

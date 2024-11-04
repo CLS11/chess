@@ -1,3 +1,4 @@
+import 'package:chess/agents.dart';
 import 'package:chess/board.dart';
 import 'package:chess/game_controller.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  GameState gameState = GameState();
+  GameState? gameState;
+  GameController gameController = GameController.random(2);
+
+  @override
+  void initState() {
+    super.initState();
+    gameState = gameController.getRandomInitialGameState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,15 +30,17 @@ class _HomePageState extends State<HomePage> {
         alignment: Alignment.topCenter,
         child: AspectRatio(
           aspectRatio: 1.0,
-          child: Board(gameState: gameState),
+          child: BoardView(gameState: gameState!),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
-            gameState = GameController.takeTurn(gameState);
+            gameState = gameController.takeTurn(gameState!);
           });
         },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.navigation),
       ),
     );
   }

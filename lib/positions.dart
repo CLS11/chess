@@ -13,6 +13,11 @@ class Delta {
   const Delta(this.dx, this.dy);
 
   @override
+  String toString() => '<Δ$dx, Δ$dy>';
+
+  double get magnitude => sqrt(dx * dx + dy * dy);
+
+  @override
   bool operator ==(other) {
     if (other is! Delta) {
       return false;
@@ -39,6 +44,10 @@ class Positions {
 
   Positions apply(Delta delta) => Positions(x + delta.dx, y + delta.dy);
   Move move(Delta delta) => Move(this, apply(delta));
+
+  Delta deltaTo(Positions other) {
+    return Delta(other.x - x, other.y - y);
+  }
 
   @override
   String toString() => '($x, $y)';

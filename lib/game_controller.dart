@@ -7,16 +7,45 @@ import 'package:chess/player.dart';
 import 'package:chess/positions.dart';
 import 'package:flutter/material.dart';
 
-const List<Color> kPlayerColors = <Color>[Colors.black, Colors.white];
-const List<String> kPlayerNames = <String>["Kenny", "Bae"];
-
 class GameController {
-  factory GameController.random(int playerCount) {
+  factory GameController.demo() {
     var controller = GameController();
-    for (var i = 0; i < playerCount; ++i) {
-      var player = Player(kPlayerNames[i], kPlayerColors[i]);
-      controller.addPlayerWithAgent(player, agents.RandomMover());
-    }
+    controller.addPlayerWithAgent(
+      const Player('Random', Colors.black),
+      agents.RandomMover(),
+    );
+    controller.addPlayerWithAgent(
+      const Player('Seeker', Colors.blue),
+      agents.Seeker(),
+    );
+    controller.addPlayerWithAgent(
+      const Player('Runner 1', Colors.white),
+      agents.Runner(),
+    );
+    controller.addPlayerWithAgent(
+      const Player('Runner 2', Colors.white),
+      agents.Runner(),
+    );
+    controller.addPlayerWithAgent(
+      const Player('Runner 3', Colors.white),
+      agents.Runner(),
+    );
+    controller.addPlayerWithAgent(
+      const Player('Runner 4', Colors.white),
+      agents.Runner(),
+    );
+    controller.addPlayerWithAgent(
+      const Player('Runner 5', Colors.white),
+      agents.Runner(),
+    );
+    controller.addPlayerWithAgent(
+      const Player('Runner 6', Colors.white),
+      agents.Runner(),
+    );
+    controller.addPlayerWithAgent(
+      const Player('Runner 7', Colors.white),
+      agents.Runner(),
+    );
     return controller;
   }
   final Map<Player, agents.Agent> _agents = <Player, agents.Agent>{};

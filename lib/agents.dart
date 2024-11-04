@@ -3,6 +3,7 @@
 import 'dart:math';
 
 import 'package:chess/board.dart';
+import 'package:chess/pieces.dart';
 import 'package:chess/player.dart';
 import 'package:chess/positions.dart';
 import 'package:flutter/material.dart';
@@ -29,27 +30,92 @@ class Move {
 }
 
 class AgentView {
+  AgentView(this._gameState, this._player);
   final GameState _gameState;
   final Player _player;
 
-  AgentView(this._gameState, this._player);
+  Iterable<Positions> getPositions(PieceType type) {
+    List<Positions> positions = <Positions>[];
+    _gameState.board.forEachPiece((position, piece) {
+      if (piece.owner == _player && piece.type == type) {
+        positions.add(position);
+      }
+    });
+    return positions;
+  }
+
+  Positions? closestOpponent(Positions position, PieceType type) {
+    Positions? bestPosition;
+    double bestDistance = double.infinity;
+    _gameState.board.forEachPiece((currentPosition, piece) {
+      if (piece.owner == _player || piece.type != type) {
+        return;
+      }
+      var currentDistance = position.deltaTo(currentPosition).magnitude;
+      if (currentDistance < bestDistance) {
+        bestDistance = currentDistance;
+        bestPosition = currentPosition;
+      }
+    });
+    return bestPosition;
+  }
 
   Iterable<Move> get legalMoves => _gameState.board.getLegalMoves(_player);
 }
 
-
 abstract class Agent {
+  const Agent();
   Move pickMove(AgentView view);
 }
 
-class FirstMover implements Agent {
+abstract class DistanceEvaluatorAgent extends Agent {
+  bool isBetter(double currentDistance, double bestDistance);
+
+  @override
+  Move pickMove(AgentView view) {
+    var myKing = view.getPositions(PieceType.king).first;
+    var targetPosition = view.closestOpponent(myKing, PieceType.king);
+    if (targetPosition == null) {
+      return view.legalMoves.first;
+    }
+
+    Move? bestMove;
+    double? bestDistance;
+
+    for (var move in view.legalMoves) {
+      var currentDistance =
+          move.finalPosition.deltaTo(targetPosition).magnitude;
+      if (bestDistance == null || isBetter(currentDistance, bestDistance)) {
+        bestDistance = currentDistance;
+        bestMove = move;
+      }
+    }
+    return bestMove!;
+  }
+}
+
+class Seeker extends DistanceEvaluatorAgent {
+  @override
+  bool isBetter(double currentDistance, double bestDistance) {
+    return currentDistance < bestDistance;
+  }
+}
+
+class Runner extends DistanceEvaluatorAgent {
+  @override
+  bool isBetter(double currentDistance, double bestDistance) {
+    return currentDistance > bestDistance;
+  }
+}
+
+class FirstMover extends Agent {
   @override
   Move pickMove(AgentView view) {
     return view.legalMoves.first;
   }
 }
 
-class RandomMover implements Agent {
+class RandomMover extends Agent {
   @override
   Move pickMove(AgentView view) {
     var rng = Random();

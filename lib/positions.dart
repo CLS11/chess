@@ -1,7 +1,53 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:math';
+
+import 'package:chess/agents.dart';
+import 'package:chess/board.dart';
 import 'package:flutter/material.dart';
 
+class Delta {
+  final int dx;
+  final int dy;
+
+  const Delta(this.dx, this.dy);
+
+  @override
+  bool operator ==(other) {
+    if (other is! Delta) {
+      return false;
+    }
+    return dx == other.dx && dy == other.dy;
+  }
+
+  @override
+  int get hashCode {
+    return hashValues(dx, dy);
+  }
+}
+
 class Positions {
-  Positions(this.x, this.y);
+  const Positions(this.x, this.y);
   final int x;
   final int y;
+
+  factory Positions.random() {
+    var rng = Random();
+    return Positions(
+        rng.nextInt(Board.kBoardWidth), rng.nextInt(Board.kBoardHeight));
+  }
+
+  Positions apply(Delta delta) => Positions(x + delta.dx, y + delta.dy);
+  Move move(Delta delta) => Move(this, apply(delta));
+
+  @override
+  String toString() => '($x, $y)';
+
+  @override
+  bool operator ==(other) {
+    if (other is! Positions) {
+      return false;
+    }
+    return x == other.x && y == other.y;
+  }
 }

@@ -1,4 +1,3 @@
-import 'package:chess/agents.dart';
 import 'package:chess/board.dart';
 import 'package:chess/game_controller.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +11,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   GameState? gameState;
-  GameController gameController = GameController.random(2);
+  GameController gameController = GameController.demo();
 
   @override
   void initState() {

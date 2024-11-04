@@ -40,7 +40,18 @@ class BoardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(painter: BoardPainter(gameState));
+    var winner = gameState.winner;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        CustomPaint(painter: BoardPainter(gameState)),
+        if (winner != null)
+          Container(
+            color: Colors.white,
+            child: Text('A winner is ${winner.name}'),
+          ),
+      ],
+    );
   }
 }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Player {
-  Player(this.name, this.color);
+  const Player(this.name, this.color);
   final String name;
   final Color color;
 

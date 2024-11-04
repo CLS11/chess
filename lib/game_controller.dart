@@ -15,37 +15,14 @@ class GameController {
       agents.RandomMover(),
     );
     controller.addPlayerWithAgent(
-      const Player('Seeker', Colors.blue),
-      agents.Seeker(),
-    );
+        const Player("Seeker", Colors.blue), agents.Seeker());
+
     controller.addPlayerWithAgent(
-      const Player('Runner 1', Colors.white),
-      agents.Runner(),
-    );
+        const Player("Runner", Colors.white), agents.Runner());
     controller.addPlayerWithAgent(
-      const Player('Runner 2', Colors.white),
-      agents.Runner(),
-    );
+        const Player("FirstMover", Colors.teal), agents.FirstMover());
     controller.addPlayerWithAgent(
-      const Player('Runner 3', Colors.white),
-      agents.Runner(),
-    );
-    controller.addPlayerWithAgent(
-      const Player('Runner 4', Colors.white),
-      agents.Runner(),
-    );
-    controller.addPlayerWithAgent(
-      const Player('Runner 5', Colors.white),
-      agents.Runner(),
-    );
-    controller.addPlayerWithAgent(
-      const Player('Runner 6', Colors.white),
-      agents.Runner(),
-    );
-    controller.addPlayerWithAgent(
-      const Player('Runner 7', Colors.white),
-      agents.Runner(),
-    );
+        const Player("Fixate", Colors.lime), agents.Fixate());
     return controller;
   }
   final Map<Player, agents.Agent> _agents = <Player, agents.Agent>{};

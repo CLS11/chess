@@ -1,6 +1,7 @@
 import 'package:chess/board.dart';
+import 'package:chess/pieces.dart';
+import 'package:chess/positions.dart';
 import 'package:flutter/material.dart';
-import 'package:chess/player.dart';
 
 const int kBoardWidth = 10;
 const int kBoardHeight = 10;
@@ -16,35 +17,29 @@ class BoardPainter extends CustomPainter {
       for (var j = 0; j < kBoardHeight; ++j) {
         paint.color = ((i + j) % 2 == 0) ? Colors.blueGrey : Colors.grey;
 
-        canvas.drawRect(
-          Rect.fromLTWH(
-              i * cell.width, j * cell.height, cell.width, cell.height),
-          paint,
-        );
+        canvas.drawRect(rectForPosition(Positions(i, j), cell), paint);
       }
     }
   }
 
-  void paintPlayers(Canvas canvas, Size size, Size cellSize) {
-    final paint = Paint();
+  Rect rectForPosition(Positions position, Size cell) {
+    return Rect.fromLTWH(position.x * cell.width, position.y * cell.height,
+        cell.width, cell.height);
+  }
+
+  void paintPieces(Canvas canvas, Size size, Size cell) {
+    var paint = Paint();
     paint.style = PaintingStyle.fill;
-    for (var player in gameState.players) {
-      final position = player.position;
-      paint.color = player.color;
-      final offset = Offset(
-        (position.x + 0.5) * cellSize.width,
-        (position.y + 0.5) * cellSize.width,
-      );
-      canvas.drawOval(
-        Rect.fromLTWH(
-          position.x * cellSize.width,
-          position.y * cellSize.height,
-          cellSize.width,
-          cellSize.height,
-        ),
-        paint,
-      );
-    }
+    gameState.board.forEachPiece(
+      (position, piece) {
+        paint.color = piece.owner.color;
+        switch (piece.type) {
+          case PieceType.king:
+            canvas.drawOval(rectForPosition(position, cell), paint);
+            break;
+        }
+      },
+    );
   }
 
   @override
@@ -53,7 +48,7 @@ class BoardPainter extends CustomPainter {
 
     paintBackground(canvas, size, cellSize);
 
-    paintPlayers(canvas, size, cellSize);
+    paintPieces(canvas, size, cellSize);
   }
 
   @override

@@ -8,9 +8,12 @@ import 'package:flutter/material.dart';
 class GameState {
   final Board board;
   final List<Player> players;
+  static const int turnsUntilDrawDefault = 50;
+  final int turnsUntilDraw;
 
   Player get activePlayer => players.first;
-  GameState(this.board, this.players);
+  GameState(this.board, this.players,
+      [this.turnsUntilDraw = turnsUntilDrawDefault]);
 
   GameState move(Move move) {
     var newBoard = board.move(activePlayer, move);
@@ -22,8 +25,15 @@ class GameState {
       }
     }
     newPlayers.add(activePlayer);
-    return GameState(newBoard, newPlayers);
+    var newTurnsUntilDraw = turnsUntilDraw - 1;
+    var playerDied = players.length != newPlayers.length;
+    if (playerDied) {
+      newTurnsUntilDraw = turnsUntilDrawDefault;
+    }
+    return GameState(newBoard, newPlayers, newTurnsUntilDraw);
   }
+
+  bool get isDraw => turnsUntilDraw <= 0;
 
   Player? get winner {
     if (players.length != 1) {
@@ -31,6 +41,8 @@ class GameState {
     }
     return activePlayer;
   }
+
+  bool get isDone => isDraw || winner != null;
 }
 
 class BoardView extends StatelessWidget {
@@ -144,4 +156,16 @@ class Board {
   }
 
   bool isAlive(Player player) => hasPieceofType(player, PieceType.king);
+}
+
+class LeaderBoard extends StatelessWidget {
+  final Map<String, int> wins;
+  const LeaderBoard({Key? key, required this.wins}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: wins.entries.map((e) => Text("${e.key}: ${e.value}")).toList(),
+    );
+  }
 }

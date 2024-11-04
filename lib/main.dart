@@ -11,6 +11,7 @@ class Chess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Checkers Battle',
       theme: ThemeData(),
       debugShowCheckedModeBanner: false,
       home: const HomePage(),

@@ -25,6 +25,8 @@ class Move {
         finalPosition == other.finalPosition;
   }
 
+  Delta get delta => finalPosition.deltaTo(initialPosition);
+
   @override
   int get hashCode => hashValues(initialPosition, finalPosition);
 }
@@ -127,4 +129,28 @@ class RandomMover extends Agent {
 class IllegalMove {
   final String reason;
   const IllegalMove(this.reason);
+}
+
+class Fixate extends Agent {
+  Delta? favorite;
+
+  Move? getMatchingFavorite(List<Move> legalMoves) {
+    var favorite = this.favorite;
+    if (favorite != null) {
+      for (var move in legalMoves) {
+        if (move.delta == favorite) {
+          return move;
+        }
+      }
+    }
+    return null;
+  }
+
+  @override
+  Move pickMove(AgentView view) {
+    var legalMoves = view.legalMoves.toList();
+    var move = getMatchingFavorite(legalMoves) ?? getRandom(legalMoves);
+    favorite = move.delta;
+    return move;
+  }
 }

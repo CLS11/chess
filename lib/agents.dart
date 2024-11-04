@@ -1,52 +1,64 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:math';
+
 import 'package:chess/board.dart';
-import 'package:chess/board_painter.dart';
 import 'package:chess/player.dart';
 import 'package:chess/positions.dart';
+import 'package:flutter/material.dart';
 
 class Move {
-  Move(this.dx, this.dy);
-  final int dx;
-  final int dy;
+  const Move(this.initialPosition, this.finalPosition);
+  final Positions initialPosition;
+  final Positions finalPosition;
+
+  @override
+  String toString() => '[$initialPosition -> $finalPosition]';
+
+  @override
+  bool operator ==(other) {
+    if (other is! Move) {
+      return false;
+    }
+    return initialPosition == other.initialPosition &&
+        finalPosition == other.finalPosition;
+  }
+
+  @override
+  int get hashCode => hashValues(initialPosition, finalPosition);
 }
 
-class AgentBoardView {
-  AgentBoardView(this._gameState, this._player);
+class AgentView {
   final GameState _gameState;
   final Player _player;
-  bool isValidPosition(Positions position) {
-    return position.x >= 0 &&
-        position.x < kBoardWidth &&
-        position.y >= 0 &&
-        position.y < kBoardHeight;
-  }
 
-  bool isValidMove(Move move) {
-    final player = _player.move(move);
-    return isValidPosition(player.position);
-  }
+  AgentView(this._gameState, this._player);
 
-  Iterable<Move> get validMoves sync* {
-    for (var dx = -1; dx <= -1; ++dx) {
-      for (var dy = -1; dy <= -1; ++dy) {
-        if (dx == 0 && dy == 0) {
-          continue;
-        }
-        final move = Move(dx, dy);
-        if (isValidMove(move)) {
-          yield Move(dx, dy);
-        }
-      }
-    }
-  }
+  Iterable<Move> get legalMoves => _gameState.board.getLegalMoves(_player);
 }
 
+
 abstract class Agent {
-  Move pickMove(AgentBoardView view);
+  Move pickMove(AgentView view);
 }
 
 class FirstMover implements Agent {
   @override
-  Move pickMove(AgentBoardView view) {
-    return view.validMoves.first;
+  Move pickMove(AgentView view) {
+    return view.legalMoves.first;
   }
+}
+
+class RandomMover implements Agent {
+  @override
+  Move pickMove(AgentView view) {
+    var rng = Random();
+    final choices = view.legalMoves.toList();
+    return choices[rng.nextInt(choices.length)];
+  }
+}
+
+class IllegalMove {
+  final String reason;
+  const IllegalMove(this.reason);
 }

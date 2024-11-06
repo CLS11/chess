@@ -1,5 +1,6 @@
 import 'package:chess/agents.dart';
 import 'package:chess/board_painter.dart';
+import 'package:chess/home_page.dart';
 import 'package:chess/pieces.dart';
 import 'package:chess/player.dart';
 import 'package:chess/positions.dart';
@@ -14,6 +15,8 @@ class GameState {
   Player get activePlayer => players.first;
   GameState(this.board, this.players,
       [this.turnsUntilDraw = turnsUntilDrawDefault]);
+
+  GameState.empty() : this(Board.empty(), const <Player>[]);
 
   GameState move(Move move) {
     var newBoard = board.move(activePlayer, move);
@@ -159,13 +162,78 @@ class Board {
 }
 
 class LeaderBoard extends StatelessWidget {
-  final Map<String, int> wins;
-  const LeaderBoard({Key? key, required this.wins}) : super(key: key);
+  final GameHistory history;
+  const LeaderBoard({Key? key, required this.history}) : super(key: key);
+
+  static const double _kWidth = 230;
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: wins.entries.map((e) => Text("${e.key}: ${e.value}")).toList(),
+    if (history.wins.isEmpty) {
+      return const SizedBox(
+        width: _kWidth,
+        child: Text('Tap play to gather data.'),
+      );
+    }
+    String asPercent(double value) {
+      var percent = (value / history.gameCount) * 100;
+      return '${percent.toStringAsFixed(1)}%';
+    }
+
+    var entries = history.wins.entries.toList();
+    entries.sort((lhs, rhs) => rhs.value.compareTo(lhs.value));
+    return SizedBox(
+      width: _kWidth,
+      child: Table(
+        border: const TableBorder(
+          top: BorderSide(color: Colors.black26),
+          bottom: BorderSide(color: Colors.black26),
+          right: BorderSide(color: Colors.black26),
+          left: BorderSide(color: Colors.black26),
+          verticalInside: BorderSide(color: Colors.black26),
+        ),
+        children: const <TableRow>[
+              TableRow(
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  border: Border(bottom: BorderSide(color: Colors.black26)),
+                ),
+                children: <Widget>[
+                  TableCell(
+                    child: Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: Text('Player'),
+                    ),
+                  ),
+                  const TableCell(
+                    child: Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: Text('Score'),
+                    ),
+                  ),
+                ],
+              ),
+            ] +
+            entries
+                .map(
+                  (e) => TableRow(
+                    children: <Widget>[
+                      TableCell(
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Text(e.key),
+                        ),
+                      ),
+                      TableCell(
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Text(asPercent(e.value)),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                .toList(),
+      ),
     );
   }
 }

@@ -28,16 +28,9 @@ class BoardPainter extends CustomPainter {
   }
 
   void paintPieces(Canvas canvas, Size size, Size cell) {
-    var paint = Paint();
-    paint.style = PaintingStyle.fill;
     gameState.board.forEachPiece(
       (position, piece) {
-        paint.color = piece.owner.color;
-        switch (piece.type) {
-          case PieceType.king:
-            canvas.drawOval(rectForPosition(position, cell), paint);
-            break;
-        }
+        piece.owner.paint(canvas, rectForPosition(position, cell), piece.type);
       },
     );
   }

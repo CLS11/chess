@@ -33,7 +33,7 @@ class GameController {
 
       board = board.placeAt(position, Pieces(PieceType.king, player));
     }
-    return GameState(board, List<Player>.from(_agents));
+    return GameState(board, List<Player>.from(_agents), []);
   }
 
   GameState takeTurn(GameState gameState) {

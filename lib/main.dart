@@ -14,7 +14,7 @@ class Chess extends StatelessWidget {
       title: 'Checkers Battle',
       theme: ThemeData(),
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      home: const BattlePage(),
     );
   }
 }

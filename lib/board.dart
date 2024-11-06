@@ -9,22 +9,26 @@ import 'package:flutter/material.dart';
 class GameState {
   final Board board;
   final List<Player> players;
+  final List<Player> deadPlayers;
   static const int turnsUntilDrawDefault = 50;
   final int turnsUntilDraw;
 
   Player get activePlayer => players.first;
-  GameState(this.board, this.players,
+  GameState(this.board, this.players, this.deadPlayers,
       [this.turnsUntilDraw = turnsUntilDrawDefault]);
 
-  GameState.empty() : this(Board.empty(), const <Player>[]);
+  GameState.empty() : this(Board.empty(), const <Player>[], const <Player>[]);
 
   GameState move(Move move) {
     var newBoard = board.move(activePlayer, move);
     var newPlayers = <Player>[];
+    var newDeadPlayers = List<Player>.from(deadPlayers);
     for (var i = 1; i < players.length; ++i) {
       var player = players[i];
       if (newBoard.isAlive(player)) {
         newPlayers.add(player);
+      } else {
+        newDeadPlayers.add(player);
       }
     }
     newPlayers.add(activePlayer);
@@ -33,7 +37,7 @@ class GameState {
     if (playerDied) {
       newTurnsUntilDraw = turnsUntilDrawDefault;
     }
-    return GameState(newBoard, newPlayers, newTurnsUntilDraw);
+    return GameState(newBoard, newPlayers, newDeadPlayers, newTurnsUntilDraw);
   }
 
   bool get isDraw => turnsUntilDraw <= 0;
@@ -207,7 +211,13 @@ class LeaderBoard extends StatelessWidget {
                   const TableCell(
                     child: Padding(
                       padding: EdgeInsets.all(4.0),
-                      child: Text('Score'),
+                      child: Text('Percent'),
+                    ),
+                  ),
+                  TableCell(
+                    child: Padding(
+                      padding: EdgeInsets.all(4.0),
+                      child: Text('ELO'),
                     ),
                   ),
                 ],
@@ -227,6 +237,14 @@ class LeaderBoard extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: Text(asPercent(e.value)),
+                        ),
+                      ),
+                      TableCell(
+                        child: Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: Text(history
+                              .currentRatingForName(e.key)
+                              .toStringAsFixed(0)),
                         ),
                       ),
                     ],

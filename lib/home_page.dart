@@ -4,24 +4,18 @@ import 'package:chess/board.dart';
 import 'package:chess/game_controller.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class BattlePage extends StatefulWidget {
+  const BattlePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<BattlePage> createState() => _BattlePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  GameState? gameState;
-  GameController gameController = GameController.demo();
-  final Map<String, int> wins = <String, int>{};
+class _BattlePageState extends State<BattlePage> {
+  GameState gameState = GameState.empty();
+  GameController gameController = GameController();
+  final history = GameHistory();
   Timer? timer;
-
-  @override
-  void initState() {
-    super.initState();
-    gameState = gameController.getRandomInitialGameState();
-  }
 
   @override
   void dispose() {
@@ -32,9 +26,8 @@ class _HomePageState extends State<HomePage> {
   void _handleTimer(Timer _) {
     nextTurn();
 
-    if (gameState?.isDone ?? false) {
-      var name = gameState?.winner?.name ?? "[Draw]";
-      wins[name] = (wins[name] ?? 0) + 1;
+    if (gameState.isDone) {
+      history.recordGame(gameState);
       timer?.cancel();
       timer = null;
       _startBattle();
@@ -42,7 +35,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _startBattle() {
-    gameState = gameController.getRandomInitialGameState();
+    setState(() {
+      gameController = GameController.withRandomAgents(5);
+      gameState = gameController.getRandomInitialGameState();
+    });
+
     timer = Timer.periodic(const Duration(milliseconds: 1), _handleTimer);
   }
 
@@ -67,14 +64,15 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Row(
         children: [
-          Align(
-            alignment: Alignment.topCenter,
-            child: AspectRatio(
-              aspectRatio: 1.0,
-              child: BoardView(gameState: gameState!),
+          AspectRatio(
+            aspectRatio: 1.0,
+            child: BoardView(gameState: gameState),
+          ),
+          Flexible(
+            child: Center(
+              child: LeaderBoard(history: history),
             ),
           ),
-          LeaderBoard(wins: wins),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -84,5 +82,19 @@ class _HomePageState extends State<HomePage> {
             : const Icon(Icons.stop),
       ),
     );
+  }
+}
+
+class GameHistory {
+  final Map<String, double> wins = <String, double>{};
+  int gameCount = 0;
+
+  void recordGame(GameState gameState) {
+    var pointsPerPlayer = 1.0 / gameState.players.length;
+    for (var player in gameState.players) {
+      var name = player.name;
+      wins[name] = (wins[name] ?? 0.0) + pointsPerPlayer;
+      gameCount += 1;
+    }
   }
 }

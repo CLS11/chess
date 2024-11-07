@@ -6,6 +6,8 @@ import 'package:chess/agents.dart';
 import 'package:chess/board.dart';
 import 'package:flutter/material.dart';
 
+const int kMoveRange = 8;
+
 class Delta {
   final int dx;
   final int dy;

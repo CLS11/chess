@@ -14,14 +14,19 @@ class Pieces {
   Iterable<Delta> get deltas sync* {
     switch (type) {
       case PieceType.king:
-        for (int dx = -1; dx <= 1; ++dx) {
-          for (int dy = -1; dy <= 1; ++dy) {
-            if (dx == 0 && dy == 0) {
-              continue;
+        for (int x = -1; x <= 1; ++x) {
+          for (int y = -1; y <= 1; ++y) {
+            for (int d = 1; d <= kMoveRange; ++d) {
+              int dx = d * x;
+              int dy = d * y;
+              if (dx == 0 && dy == 0) {
+                continue;
+              }
+              yield Delta(dx, dy);
             }
-            yield Delta(dx, dy);
           }
         }
+
         break;
     }
   }

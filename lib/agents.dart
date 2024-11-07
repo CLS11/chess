@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:math';
-
 import 'package:chess/board.dart';
 import 'package:chess/pieces.dart';
 import 'package:chess/player.dart';
@@ -15,6 +14,7 @@ List<AgentFactory> all = <AgentFactory>[
   RandomMover.new,
   Fixate.new,
   Seeker.new,
+  CautiousSeeker.new,
   Runner.new,
   Opportunist.new,
 ];
@@ -47,10 +47,10 @@ class AgentView {
   final GameState _gameState;
   final Player _player;
 
-  Iterable<Positions> getPositions(PieceType type) {
+  List<Positions> _getPositions(bool Function(Pieces piece) predicate) {
     List<Positions> positions = <Positions>[];
     _gameState.board.forEachPiece((position, piece) {
-      if (piece.owner == _player && piece.type == type) {
+      if (predicate(piece)) {
         positions.add(position);
       }
     });
@@ -71,6 +71,16 @@ class AgentView {
       }
     });
     return bestPosition;
+  }
+
+  List<Positions> getPositions(PieceType type) {
+    return _getPositions(
+        (piece) => piece.owner == _player && piece.type == type);
+  }
+
+  List<Positions> enemyPositions(PieceType type) {
+    return _getPositions(
+        (piece) => piece.owner != _player && piece.type == type);
   }
 
   Iterable<Move> get legalMoves => _gameState.board.getLegalMoves(_player);
@@ -94,6 +104,53 @@ Move findMoveByDistanceToTarget(AgentView view, Positions targetPosition,
     }
   }
   return bestMove!;
+}
+
+class CautiousSeeker extends Agent {
+  int? previousValue;
+  int? element;
+  @override
+  String get name => 'CautiousSeeker';
+  @override
+  Color get color => Colors.cyanAccent;
+
+  int _distanceToNearestPiece(Move move, List<Positions> pieces) {
+    assert(pieces.isNotEmpty);
+    return pieces
+        .map((e) => e.deltaTo(move.finalPosition).walkingDistance)
+        .fold(
+          null,
+          (int? previousValue, element) =>
+              (previousValue == null || element! < previousValue)
+                  ? element
+                  : previousValue,
+        )!;
+  }
+
+  @override
+  Move pickMove(AgentView view) {
+    final otherKings = view.getPositions(PieceType.king);
+    final safeMoves = view.legalMoves
+        .where((move) => !otherKings
+            .map((e) => e.deltaTo(move.finalPosition).walkingDistance)
+            .contains(1))
+        .toList();
+
+    if (safeMoves.isEmpty) {
+      return _findRandomMove(view.legalMoves);
+    }
+
+    Move? bestMove;
+    int? bestDistance;
+    for (final move in safeMoves) {
+      final distance = _distanceToNearestPiece(move, otherKings);
+      if (bestDistance == null || distance < bestDistance) {
+        bestDistance = distance;
+        bestMove = move;
+      }
+    }
+    return bestMove!;
+  }
 }
 
 class Seeker extends Agent {
@@ -169,6 +226,11 @@ class Opportunist extends Agent {
   }
 }
 
+class IllegalMove {
+  final String reason;
+  const IllegalMove(this.reason);
+}
+
 class FirstMover extends Agent {
   @override
   String get name => 'FirstMover';
@@ -180,11 +242,6 @@ class FirstMover extends Agent {
   Move pickMove(AgentView view) {
     return view.legalMoves.first;
   }
-}
-
-class IllegalMove {
-  final String reason;
-  const IllegalMove(this.reason);
 }
 
 Move _findRandomMove(Iterable<Move> legalMoves) {

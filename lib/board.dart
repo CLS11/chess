@@ -230,7 +230,10 @@ class LeaderBoard extends StatelessWidget {
                       TableCell(
                         child: Padding(
                           padding: const EdgeInsets.all(4.0),
-                          child: Text(e.key),
+                          child: Text(
+                            e.key,
+                            style: TextStyle(color: history.colors[e.key]),
+                          ),
                         ),
                       ),
                       TableCell(

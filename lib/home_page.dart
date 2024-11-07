@@ -6,6 +6,9 @@ import 'package:chess/game_controller.dart';
 import 'package:chess/player.dart';
 import 'package:flutter/material.dart';
 
+const int kNumberOfPlayers = 5;
+const Duration kGameTickDuration = Duration(milliseconds: 1);
+
 class BattlePage extends StatefulWidget {
   const BattlePage({super.key});
 
@@ -38,11 +41,11 @@ class _BattlePageState extends State<BattlePage> {
 
   void _startBattle() {
     setState(() {
-      gameController = GameController.withRandomAgents(5);
+      gameController = GameController.withRandomAgents(kNumberOfPlayers);
       gameState = gameController.getRandomInitialGameState();
     });
 
-    timer = Timer.periodic(const Duration(milliseconds: 5), _handleTimer);
+    timer = Timer.periodic(kGameTickDuration, _handleTimer);
   }
 
   void _stopBattle() {
@@ -54,7 +57,8 @@ class _BattlePageState extends State<BattlePage> {
 
   void nextTurn() {
     setState(() {
-      gameState = gameController.takeTurn(gameState); // Remove nullable safety operator
+      gameState =
+          gameController.takeTurn(gameState); // Remove nullable safety operator
     });
   }
 
@@ -95,6 +99,7 @@ class GameHistory {
   int gameCount = 0;
 
   final Map<String, double> rating = <String, double>{};
+  final Map<String, Color> colors = <String, Color>{};
 
   double expectedScore(double currentRating, double opponentRating) {
     var exponent = (opponentRating - currentRating) / 400.0;
@@ -129,17 +134,33 @@ class GameHistory {
     for (var player in gameState.players) {
       var name = player.name;
       wins[name] = (wins[name] ?? 0.0) + pointsPerPlayer;
+      colors[name] = player.color;
       gameCount += 1;
     }
-    for (var i = 0; i < gameState.deadPlayers.length - 1; i++) {
-      var winner = gameState.deadPlayers[i + 1];
-      var loser = gameState.deadPlayers[i];
+
+    var haveSeen = <Type, bool>{};
+
+    bool checkPlayer(p) {
+      var didSeeBefore = haveSeen[p.runtimeType] ?? false;
+      haveSeen[p.runtimeType] = true;
+      return !didSeeBefore;
+    }
+
+    var alivePlayers = gameState.players.where(checkPlayer).toList();
+    var deadPlayers = gameState.deadPlayers.where(checkPlayer).toList();
+    recordRatings(alivePlayers, deadPlayers);
+  }
+
+  void recordRatings(List<Player> alivePlayers, List<Player> deadPlayers) {
+    for (var i = 0; i < deadPlayers.length - 1; i++) {
+      var winner = deadPlayers[i + 1];
+      var loser = deadPlayers[i];
       updateRating(winner, loser, 1.0);
     }
-    var alivePlayers = List<Player>.from(gameState.players);
+
     alivePlayers.shuffle();
-    if (gameState.deadPlayers.isNotEmpty) {
-      updateRating(alivePlayers.first, gameState.deadPlayers.last, 1.0);
+    if (deadPlayers.isNotEmpty) {
+      updateRating(alivePlayers.first, deadPlayers.last, 1.0);
     }
     for (var i = 0; i < alivePlayers.length; i++) {
       for (var j = i + 1; j < alivePlayers.length; j++) {
